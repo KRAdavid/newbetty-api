@@ -16,31 +16,39 @@ def get_entry(rc_date: str = Query(...), rc_no: int = Query(...), meet: int = Qu
         "meet": meet,
         "_type": "json"
     }
-    print(f"📡 [ENTRY] 요청 파라미터: {params}")
+
+    print(f"📡 /kra/entry 호출됨 → rc_date={rc_date}, rc_no={rc_no}, meet={meet}")
+
     try:
         response = requests.get(url, params=params, timeout=10)
+        print("🧾 응답 상태 코드:", response.status_code)
         data = response.json()
-        print(f"📦 [ENTRY] 응답 데이터: {data}")
-        items = data['response']['body']['items']['item']
+        print("📦 응답 본문:", data)
+
+        items = data.get('response', {}).get('body', {}).get('items', {}).get('item', [])
         if not isinstance(items, list):
             items = [items]
+
         parsed = []
         for item in items:
             parsed.append({
-                "마번": int(item.get("hrNo")),
+                "마번": int(item.get("hrNo", 0)),
                 "마명": item.get("hrName"),
                 "기수": item.get("jkName"),
                 "조교사": item.get("trName"),
-                "중량": float(item.get("wght")) if item.get("wght") else None,
+                "중량": float(item.get("wght", 0)),
                 "성장세": None,
                 "조교강도": None,
                 "전개유형": None,
                 "전개충돌": None
             })
+
         return {"status": "success", "entry_summary": parsed}
+
     except Exception as e:
-        print(f"❌ [ENTRY] 오류 발생: {e}")
+        print("❌ API 요청 실패:", str(e))
         return {"status": "error", "message": str(e)}
+
 
 @app.get("/kra/result")
 def get_result(rc_date: str = Query(...), rc_no: int = Query(...), meet: int = Query(...)):
@@ -52,27 +60,34 @@ def get_result(rc_date: str = Query(...), rc_no: int = Query(...), meet: int = Q
         "meet": meet,
         "_type": "json"
     }
-    print(f"📡 [RESULT] 요청 파라미터: {params}")
+
+    print(f"📡 /kra/result 호출됨 → rc_date={rc_date}, rc_no={rc_no}, meet={meet}")
+
     try:
         response = requests.get(url, params=params, timeout=10)
+        print("🧾 응답 상태 코드:", response.status_code)
         data = response.json()
-        print(f"📦 [RESULT] 응답 데이터: {data}")
-        items = data['response']['body']['items']['item']
+        print("📦 응답 본문:", data)
+
+        items = data.get('response', {}).get('body', {}).get('items', {}).get('item', [])
         if not isinstance(items, list):
             items = [items]
+
         parsed = []
         for item in items:
             parsed.append({
-                "착순": int(item.get("ord")),
-                "마번": int(item.get("hrNo")),
+                "착순": int(item.get("ord", 0)),
+                "마번": int(item.get("hrNo", 0)),
                 "마명": item.get("hrName"),
                 "기수": item.get("jkName"),
                 "도착차": item.get("rcDist"),
                 "단승": item.get("winOdds"),
                 "복승": item.get("qnlOdds")
             })
+
         parsed.sort(key=lambda x: x["착순"])
         return {"status": "success", "result_summary": parsed}
+
     except Exception as e:
-        print(f"❌ [RESULT] 오류 발생: {e}")
+        print("❌ API 요청 실패:", str(e))
         return {"status": "error", "message": str(e)}
