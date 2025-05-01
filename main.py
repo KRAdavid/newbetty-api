@@ -18,9 +18,8 @@ def get_entry(rc_date: str = Query(...), rc_no: int = Query(...), meet: int = Qu
     }
 
     print(f"📡 /kra/entry 호출됨 → rc_date={rc_date}, rc_no={rc_no}, meet={meet}")
-
     try:
-        response = requests.get(url, params=params, timeout=10)
+        response = requests.get(url, params=params, timeout=10, verify=False)
         print("🧾 응답 상태 코드:", response.status_code)
         data = response.json()
         print("📦 응답 본문:", data)
@@ -44,7 +43,6 @@ def get_entry(rc_date: str = Query(...), rc_no: int = Query(...), meet: int = Qu
             })
 
         return {"status": "success", "entry_summary": parsed}
-
     except Exception as e:
         print("❌ API 요청 실패:", str(e))
         return {"status": "error", "message": str(e)}
@@ -62,9 +60,8 @@ def get_result(rc_date: str = Query(...), rc_no: int = Query(...), meet: int = Q
     }
 
     print(f"📡 /kra/result 호출됨 → rc_date={rc_date}, rc_no={rc_no}, meet={meet}")
-
     try:
-        response = requests.get(url, params=params, timeout=10)
+        response = requests.get(url, params=params, timeout=10, verify=False)
         print("🧾 응답 상태 코드:", response.status_code)
         data = response.json()
         print("📦 응답 본문:", data)
@@ -87,7 +84,6 @@ def get_result(rc_date: str = Query(...), rc_no: int = Query(...), meet: int = Q
 
         parsed.sort(key=lambda x: x["착순"])
         return {"status": "success", "result_summary": parsed}
-
     except Exception as e:
         print("❌ API 요청 실패:", str(e))
         return {"status": "error", "message": str(e)}
