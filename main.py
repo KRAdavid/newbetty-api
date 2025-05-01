@@ -1,9 +1,10 @@
 from fastapi import FastAPI, Query
 import requests
+import os
 
 app = FastAPI()
 
-KRA_API_KEY = "YOUR_KRA_API_KEY"
+KRA_API_KEY = os.getenv("KRA_API_KEY")  # 환경변수에서 인증키 불러오기
 
 @app.get("/kra/entry")
 def get_entry(rc_date: str = Query(...), rc_no: int = Query(...), meet: int = Query(...)):
