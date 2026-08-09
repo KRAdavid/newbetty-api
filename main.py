@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, Query
 import requests
 import os
@@ -28,6 +27,21 @@ app.add_middleware(
 @app.get("/healthz")
 def healthz():
     return {"status": "ok", "service": "kra-betigo-api", "contract": "KRA_BETIGO_HEALTH_V1"}
+
+KRA_API_KEY = os.getenv("KRA_API_KEY")
+
+@app.get("/kra/engine-status")
+def engine_status():
+    """Public, non-secret readiness summary for the novice-facing UI."""
+    return {
+        "contract": "KRA_ENGINE_STATUS_V1",
+        "api_configured": bool(KRA_API_KEY),
+        "entry_source": "KRA_API26_2" if KRA_API_KEY else None,
+        "historical_surface_evidence": False,
+        "release_gate": "HOLD_UNTIL_EACH_RUNNER_HAS_3_PAST_SURFACE_OBSERVATIONS",
+        "recommendation_publication": "BLOCKED",
+        "reason_code": "HISTORICAL_SURFACE_PIPELINE_PENDING",
+    }
 
 @app.post("/kra/scenario")
 def scenario(payload: dict):
@@ -66,9 +80,6 @@ def scenario(payload: dict):
         "publication_status": "RELEASED" if result["status"] == "READY" else "HOLD",
     })
     return result
-
-
-KRA_API_KEY = os.getenv("KRA_API_KEY")
 
 @app.get("/kra/entry")
 def get_entry(rc_date: str = Query(...), rc_no: int = Query(...), meet: int = Query(...)):
@@ -110,7 +121,15 @@ def get_entry(rc_date: str = Query(...), rc_no: int = Query(...), meet: int = Qu
             except Exception as parse_error:
                 print("⚠️ 개별 항목 파싱 실패:", parse_error)
 
-        return {"status": "success", "entry_summary": parsed}
+        return {
+            "status": "success",
+            "entry_summary": parsed,
+            "engine_status": {
+                "historical_surface_evidence": False,
+                "recommendation_publication": "BLOCKED",
+                "reason_code": "HISTORICAL_SURFACE_PIPELINE_PENDING",
+            },
+        }
 
     except Exception as e:
         print("❌ API 요청 실패:", str(e))
