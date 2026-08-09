@@ -19,7 +19,7 @@ class SurfaceScenario:
     pace_pressure: str
 
 def validate_surface_scenario(track_condition: str, moisture_percent: Any, pace_pressure: str = "MODEL_AUTO") -> SurfaceScenario:
-    condition = str(track_condition or "").strip().upper()
+    condition = {"건조": "DRY", "양호": "GOOD", "다습": "MOIST", "포화": "SATURATED", "불량": "POOR"}.get(str(track_condition or "").strip(), str(track_condition or "").strip()).upper()
     if condition not in MOISTURE_RANGES:
         raise ValueError("track_condition must be one of DRY, GOOD, MOIST, SATURATED, POOR")
     try:
